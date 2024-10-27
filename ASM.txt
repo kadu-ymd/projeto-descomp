@@ -1,0 +1,144 @@
+LDI $R1 $0
+STA $R1 @0 # M[0] = conteúdo de R1
+STA $R1 @1 # M[1] = conteúdo de R1
+STA $R1 @2 # M[2] = conteúdo de R1
+STA $R1 @3 # M[3] = conteúdo de R1
+STA $R1 @4 # M[4] = conteúdo de R1
+STA $R1 @5 # M[5] = conteúdo de R1
+STA $R1 @6 # M[6] = conteúdo de R1
+STA $R1 @7 # M[7] = conteúdo de R1
+STA $R1 @8 # M[8] = conteúdo de R1
+STA $R1 @9 # M[9] = conteúdo de R1
+STA $R1 @10 # M[10] = conteúdo de R1
+STA $R1 @11 # M[11] = conteúdo de R1
+STA $R1 @12 # constante 0
+STA $R1 @256 # Grupo de 8 leds
+STA $R1 @288 # Displays
+STA $R1 @289
+STA $R1 @290
+STA $R1 @291
+STA $R1 @292
+STA $R1 @293
+STA $R1 @511 # flip flops
+STA $R1 @510
+LDI $R1 $10 # limites de cada display
+STA $R1 @6 # unidade de segundo
+STA $R1 @8 # unidade de minuto
+LDI $R1 $6
+STA $R1 @7 # dezena de segundo
+STA $R1 @9 # dezena de minuto
+LDI $R1 $4
+STA $R1 @10 # unidade de hora
+LDI $R1 $3
+STA $R1 @11 # dezena de hora
+
+inicio:
+NOP # LOOP
+LDA $R1 @352 # lê botão key 0
+CEQ $R1 @12 # compara com a constante 0
+JEQ @inicio # desvia se igual a 0 (botão não foi pressionado)
+
+JSR @incrementa_s1 # Jump para incremento
+
+LDA $R1 @0
+STA $R1 @288
+
+LDA $R1 @1
+STA $R1 @289
+
+LDA $R1 @2
+STA $R1 @290
+
+LDA $R1 @3
+STA $R1 @291
+
+LDA $R1 @4
+STA $R1 @292
+
+LDA $R1 @5
+STA $R1 @293
+
+JMP @inicio
+
+incrementa_s1:
+STA $R0 @511
+LDI $R1 $1 # LEDS dispensáveis
+STA $R1 @257
+
+LDA $R1 @0 # carrega unidade de segundo
+ADDI $R1 $1 # ADDI 1
+STA $R1 @0 # atualiza unidade de segundo
+CEQ $R1 @6 # compara com 10 (endereço do limite)
+JEQ @incrementa_s2 # se unidade == 10, vai para incremento da dezena
+
+RET # Se a unidade de segundo não atingiu 10
+
+incrementa_s2:
+LDI $R1 $0 # Incremento da dezena de segundo
+STA $R1 @0 # reseta unidade de segundo para 0		
+LDA $R1 @1 # carrega dezena de segundo
+ADDI $R1 $1
+STA $R1 @1 # atualiza dezena de segundo
+CEQ $R1 @7 # compara com 6 (endereço do limite)
+JEQ @incrementa_m1 # se dezena == 6, vai para incremento de minuto
+
+RET # Se a dezena de segundo não atingiu 6
+
+incrementa_m1:
+LDI $R1 $0 # reseta dezena de segundo para 0
+STA $R1 @1 # atualiza dezena de segundo
+LDA $R1 @2 # carrega unidade de minuto
+ADDI $R1 $1
+STA $R1 @2 # atualiza unidade de minuto
+CEQ $R1 @8 # compara com 10 (endereço do limite)
+JEQ @incrementa_m2 # se unidade == 10, vai para incremento da dezena de minuto
+
+RET # Se a unidade de minuto não atingiu 10
+
+incrementa_m2:
+LDI $R1 $0 # reseta unidade de minuto para 0
+STA $R1 @2 # atualiza unidade de minuto
+LDA $R1 @3 # carrega dezena de minuto
+ADDI $R1 $1
+STA $R1 @3 # atualiza dezena de minuto
+CEQ $R1 @9 # compara com 6 (endereço do limite)
+JEQ @incrementa_h1 # se dezena == 6, vai para incremento da hora
+
+RET # Se a dezena de minuto não atingiu 6
+
+incrementa_h1:
+LDI $R1 $0 # reseta dezena de minuto para 0
+STA $R1 @3 # atualiza dezena de minuto
+LDA $R1 @4 # carrega unidade de hora
+ADDI $R1 $1
+STA $R1 @4 # atualiza unidade de hora
+
+LDA $R1 @5 # carrega dezena de hora
+CEQ $R1 @11 # compara se dezena de hora == 2
+JEQ @limite_24
+
+CEQ $R1 @6 # compara com 10 (endereço do limite)
+JEQ @incrementa_h2
+RET
+
+limite_24:
+CEQ $R1 @10 # compara com 4
+JEQ @reset # se unidade == 4, vai para zerar cada casa (RESET)
+RET
+
+incrementa_h2:
+LDA $R1 @5 # carrega dezena de hora
+ADDI $R1 $1
+STA $R1 @5 # atualiza dezena de hora
+RET 
+
+reset:
+LDI $R0 $0
+STA $R0 @0 # reseta unidade de segundo
+STA $R0 @1 # reseta dezena de segundo
+STA $R0 @2 # reseta unidade de minuto
+STA $R0 @3 # reseta dezena de minuto
+STA $R0 @4 # reseta unidade de hora
+STA $R0 @5 # reseta dezena de hora
+
+RET

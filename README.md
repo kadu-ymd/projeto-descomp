@@ -1,1 +1,1 @@
-# projeto-descomp
+# Projeto Relógio - Design de Computadores
